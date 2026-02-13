@@ -1,0 +1,23 @@
+server:
+  port: 6969
+spring:
+  application:
+    name: lauracanceleatiempo
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lauraisuerte
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        format_sql: true
+    sql:
+      init:
+        mode: always
+        continue-on-error: false
+
