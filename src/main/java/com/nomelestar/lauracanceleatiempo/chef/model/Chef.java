@@ -1,8 +1,10 @@
 package com.nomelestar.lauracanceleatiempo.chef.model;
 
+import com.nomelestar.lauracanceleatiempo.dishes.models.Dish;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -19,7 +21,8 @@ public class Chef {
     private String description;
     @Column(nullable = false, length = 120)
     private String speciality;
-
+    @OneToMany(mappedBy = "chef",cascade = CascadeType.ALL)
+    private List<Dish> dishes;
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

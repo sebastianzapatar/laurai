@@ -5,6 +5,7 @@ import com.nomelestar.lauracanceleatiempo.chef.dto.ChefResponseDTO;
 import com.nomelestar.lauracanceleatiempo.chef.mapper.ChefMapper;
 import com.nomelestar.lauracanceleatiempo.chef.model.Chef;
 import com.nomelestar.lauracanceleatiempo.chef.repository.ChefRepository;
+import com.nomelestar.lauracanceleatiempo.excepciones.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +35,8 @@ public class ChefService {
     }
     public ChefResponseDTO findById(Long id){
         Chef chef=chefRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("Chef not found"));
+                .orElseThrow(()->new NotFoundException("Chef not found"));
         return ChefMapper.toChefResponseDTO(chef);
     }
+
 }
