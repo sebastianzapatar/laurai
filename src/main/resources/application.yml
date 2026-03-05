@@ -4,7 +4,7 @@ spring:
   application:
     name: lauracanceleatiempo
   datasource:
-    url: jdbc:postgresql://localhost:5432/lauraisuerte
+    url: jdbc:postgresql://postgres_db:5432/chefs_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
