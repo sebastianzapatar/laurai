@@ -4,9 +4,9 @@ spring:
   application:
     name: lauracanceleatiempo
   datasource:
-    url: jdbc:postgresql://postgres_db:5432/chefs_db
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres_db:5432/chefs_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -20,4 +20,9 @@ spring:
       init:
         mode: always
         continue-on-error: false
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Issuer URI de Keycloak - sobreescribible via variable de entorno en Docker
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/chefs-realm}
