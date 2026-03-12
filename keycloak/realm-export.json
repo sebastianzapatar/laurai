@@ -3,7 +3,7 @@
     "realm": "chefs-realm",
     "displayName": "Chefs Realm",
     "enabled": true,
-    "sslRequired": "external",
+    "sslRequired": "none",
     "registrationAllowed": false,
     "loginWithEmailAllowed": true,
     "duplicateEmailsAllowed": false,

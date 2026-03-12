@@ -10,7 +10,6 @@ import com.nomelestar.lauracanceleatiempo.dishes.models.Dish;
 import com.nomelestar.lauracanceleatiempo.dishes.repository.DishRepository;
 import com.nomelestar.lauracanceleatiempo.excepciones.NotFoundException;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,7 +37,7 @@ public class DishService {
         return dishes.stream().map(DishMapper::toDto).toList();
     }
     public List<DishResponseDTO> findByChef(Long chefId){
-        List<Dish> dishes=dishRepository.findbyChefId(chefId);
+        List<Dish> dishes=dishRepository.findByChefId(chefId);
         return dishes.stream().map(DishMapper::toDto).toList();
     }
 

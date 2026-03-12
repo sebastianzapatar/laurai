@@ -4,22 +4,18 @@ spring:
   application:
     name: lauracanceleatiempo
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres_db:5432/chefs_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5469/chefs_db}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   jpa:
+    show-sql: ${SPRING_JPA_SHOW_SQL:true}
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
-    show-sql: true
-    defer-datasource-initialization: true
-    properties:
-      hibernate:
-        format_sql: true
     sql:
       init:
         mode: always
-        continue-on-error: false
   security:
     oauth2:
       resourceserver:

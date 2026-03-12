@@ -49,14 +49,22 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- Spring Boot Test (JUnit5, MockMvc, DataJpaTest, ObjectMapper, etc.) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- H2 in-memory DB for tests -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Spring Security Test utilities (jwt(), etc.) -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Source: https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api -->
@@ -91,6 +99,53 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <!-- JaCoCo coverage plugin -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                            <excludes>
+                                <!-- Exclude main app class, config, entities, DTOs, exceptions -->
+                                <exclude>com/nomelestar/lauracanceleatiempo/LauracanceleatiempoApplication.class</exclude>
+                                <exclude>com/nomelestar/lauracanceleatiempo/config/**</exclude>
+                                <exclude>com/nomelestar/lauracanceleatiempo/chef/model/**</exclude>
+                                <exclude>com/nomelestar/lauracanceleatiempo/dishes/models/**</exclude>
+                                <exclude>com/nomelestar/lauracanceleatiempo/chef/dto/**</exclude>
+                                <exclude>com/nomelestar/lauracanceleatiempo/dishes/dto/**</exclude>
+                                <exclude>com/nomelestar/lauracanceleatiempo/excepciones/ApiError.class</exclude>
+                                <exclude>com/nomelestar/lauracanceleatiempo/excepciones/NotFoundException.class</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
