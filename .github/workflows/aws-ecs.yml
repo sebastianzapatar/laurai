@@ -1,0 +1,127 @@
+name: CI/CD → Build, Push ECR & Deploy ECS
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION:          us-east-2
+  ECR_REPOSITORY:      laura-api
+  ECS_CLUSTER:         laura-cluster
+  ECS_SERVICE:         laura-api-service
+  ECS_TASK_DEFINITION: laura-api-task
+  CONTAINER_NAME:      api-container
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 1: Terraform — crea/actualiza infraestructura (RDS, ECR, ECS)
+  # El docker build/push LO HACE el Job 2, no Terraform.
+  # ─────────────────────────────────────────────────────────────────
+  terraform:
+    name: 🏗️ Infraestructura (Terraform)
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    - name: Configurar credenciales AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region:            ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.7.0"
+        terraform_wrapper: false
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      run: |
+        terraform plan \
+          -var="db_password=${{ secrets.DB_PASSWORD }}" \
+          -var="keycloak_issuer_uri=${{ secrets.KEYCLOAK_ISSUER_URI }}" \
+          -out=plan.out
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve plan.out
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 2: Build Docker → Push ECR → Deploy ECS
+  # Corre después de que Terraform termine correctamente.
+  # ─────────────────────────────────────────────────────────────────
+  deploy:
+    name: 🚀 Build & Deploy
+    runs-on: ubuntu-latest
+    environment: production
+    needs: terraform
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    - name: Setup JDK 21 (caché de dependencias Maven)
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Configurar credenciales AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region:            ${{ env.AWS_REGION }}
+
+    - name: Login a Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build, Tag y Push imagen a ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG:    ${{ github.sha }}
+      run: |
+        docker build \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+          .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Descargar Task Definition actual de ECS
+      run: |
+        aws ecs describe-task-definition \
+          --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+          --query taskDefinition > task-definition.json
+
+    - name: Inyectar nueva imagen en Task Definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name:  ${{ env.CONTAINER_NAME }}
+        image:           ${{ steps.build-image.outputs.image }}
+
+    - name: Desplegar en ECS (Zero Downtime)
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      with:
+        task-definition:            ${{ steps.task-def.outputs.task-definition }}
+        service:                    ${{ env.ECS_SERVICE }}
+        cluster:                    ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true

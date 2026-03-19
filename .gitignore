@@ -34,3 +34,23 @@ build/
 
 ### Env files ###
 .env
+
+### Terraform ###
+# Archivos de variables con secrets (NUNCA al repo)
+terraform/terraform.tfvars
+terraform/*.tfvars
+!terraform/*.tfvars.example
+
+# Directorio de providers descargados (pesado)
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+
+# Archivos de estado (contienen secrets en texto plano)
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfstate
+terraform/*.tfstate.backup
+
+# Archivos de plan
+terraform/*.tfplan
+terraform/plan.out
