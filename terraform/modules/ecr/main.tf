@@ -33,41 +33,10 @@ resource "aws_ecr_lifecycle_policy" "cleanup" {
   })
 }
 
-###############################################################
-# Build y Push automático de la imagen Docker
-# Se ejecuta en la máquina local al hacer terraform apply
-# Requisito: Docker Desktop debe estar corriendo
-###############################################################
-
 locals {
   ecr_registry = "${var.aws_account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
   image_url    = "${local.ecr_registry}/${aws_ecr_repository.app.name}"
-  # Ruta a la raíz del proyecto (dos niveles arriba de terraform/)
-  project_root = "${path.module}/../../.."
 }
 
-resource "null_resource" "docker_build_push" {
-  # Se re-ejecuta solo si cambian el Dockerfile o el pom.xml
-  triggers = {
-    dockerfile_hash = filemd5("${local.project_root}/Dockerfile")
-    pom_hash        = filemd5("${local.project_root}/pom.xml")
-  }
-
-  depends_on = [aws_ecr_repository.app]
-
-  # 1. Login a ECR
-  provisioner "local-exec" {
-    command = "aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${local.ecr_registry}"
-  }
-
-  # 2. Build de la imagen desde la raíz del proyecto
-  provisioner "local-exec" {
-    command     = "docker build -t ${local.image_url}:latest ."
-    working_dir = local.project_root
-  }
-
-  # 3. Push a ECR
-  provisioner "local-exec" {
-    command = "docker push ${local.image_url}:latest"
-  }
-}
+# Nota: el build y push de la imagen Docker se realizan en GitHub Actions,
+# no en Terraform. Ver .github/workflows/deploy.yml

@@ -38,7 +38,7 @@ resource "aws_db_subnet_group" "main" {
 resource "aws_db_instance" "postgres" {
   identifier        = "${var.project_name}-postgres"
   engine            = "postgres"
-  engine_version    = "16.3"
+  engine_version    = "16.6"
   instance_class    = "db.t3.micro"
   allocated_storage = 20
   storage_encrypted = true
@@ -54,7 +54,7 @@ resource "aws_db_instance" "postgres" {
   multi_az            = false   # Cambiar a true en producción real
   skip_final_snapshot = true    # Cambiar a false en producción real
 
-  backup_retention_period = 7
+  backup_retention_period = 0   # Free tier no soporta backups automáticos (máximo = 0)
   backup_window           = "03:00-04:00"
   maintenance_window      = "Mon:04:00-Mon:05:00"
 
