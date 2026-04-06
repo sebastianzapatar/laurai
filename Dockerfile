@@ -29,7 +29,7 @@ COPY --from=build /app/target/*.jar /app/app.jar
 
 
 
-EXPOSE 8080
+EXPOSE 8081
 
 # Nota: variable estándar suele ser JAVA_OPTS (sin guion)
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
