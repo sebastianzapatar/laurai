@@ -12,15 +12,14 @@ terraform {
     }
   }
 
-  # Backend remoto en S3 (recomendado para equipos)
-  # Descomenta esto cuando hayas creado el bucket manualmente UNA SOLA VEZ:
-  # backend "s3" {
-  #   bucket         = "laura-terraform-state"
-  #   key            = "lauracanceleatiempo/terraform.tfstate"
-  #   region         = "us-east-2"
-  #   dynamodb_table = "laura-terraform-locks"
-  #   encrypt        = true
-  # }
+  # Backend remoto en S3 — el workflow lo crea automáticamente si no existe
+  backend "s3" {
+    bucket         = "laura-terraform-state"
+    key            = "lauracanceleatiempo/terraform.tfstate"
+    region         = "us-east-2"
+    dynamodb_table = "laura-terraform-locks"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
