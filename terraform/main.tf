@@ -17,7 +17,7 @@ terraform {
     bucket         = "laura-tf-state-xyz89b"
     key            = "lauracanceleatiempo/terraform.tfstate"
     region         = "us-east-2"
-    dynamodb_table = "laura-terraform-locks"
+    dynamodb_table = "laura-tf-locks-xyz89b"
     encrypt        = true
   }
 }
