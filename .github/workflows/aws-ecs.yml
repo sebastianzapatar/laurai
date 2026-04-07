@@ -24,6 +24,8 @@ jobs:
     defaults:
       run:
         working-directory: terraform
+    outputs:
+      alb_dns: ${{ steps.tf_output.outputs.alb_dns }}
 
     steps:
     - name: Checkout del código
@@ -57,6 +59,12 @@ jobs:
 
     - name: Terraform Apply
       run: terraform apply -auto-approve plan.out
+
+    - name: Obtener URL del ALB
+      id: tf_output
+      run: |
+        ALB_DNS=$(terraform output -raw alb_dns_name)
+        echo "alb_dns=$ALB_DNS" >> $GITHUB_OUTPUT
 
   # ─────────────────────────────────────────────────────────────────
   # JOB 2: Build Docker → Push ECR → Deploy ECS
@@ -125,3 +133,20 @@ jobs:
         service:                    ${{ env.ECS_SERVICE }}
         cluster:                    ${{ env.ECS_CLUSTER }}
         wait-for-service-stability: true
+
+    - name: 🌐 URL de la API
+      run: |
+        ALB_DNS="${{ needs.terraform.outputs.alb_dns }}"
+        echo "## 🚀 Deploy exitoso!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+        echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+        echo "| 🌐 URL de la API | http://$ALB_DNS |" >> $GITHUB_STEP_SUMMARY
+        echo "| 📦 Imagen | ${{ steps.build-image.outputs.image }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| 🕐 Desplegado | $(date '+%Y-%m-%d %H:%M:%S UTC') |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Endpoints disponibles" >> $GITHUB_STEP_SUMMARY
+        echo "- \`GET\`  http://$ALB_DNS/actuator/health" >> $GITHUB_STEP_SUMMARY
+        echo "- \`GET\`  http://$ALB_DNS/dishes" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 **[Abrir API →](http://$ALB_DNS)**" >> $GITHUB_STEP_SUMMARY
