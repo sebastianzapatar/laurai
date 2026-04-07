@@ -41,7 +41,9 @@ jobs:
         terraform_wrapper: false
 
     - name: Terraform Init
-      run: terraform init -migrate-state -force-copy
+      run: |
+        rm -rf .terraform || true
+        terraform init -reconfigure
 
     - name: Terraform Destroy
       run: |
