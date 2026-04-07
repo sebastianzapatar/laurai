@@ -76,18 +76,20 @@ jobs:
     # Si ya están en el state el import falla silenciosamente (|| true)
     - name: 📥 Importar recursos AWS existentes al state
       run: |
+        VARS="-var=\"db_password=${{ secrets.DB_PASSWORD }}\" -var=\"keycloak_issuer_uri=${{ secrets.KEYCLOAK_ISSUER_URI }}\""
+        
         # ECR Repository
-        terraform import module.ecr.aws_ecr_repository.app laura-api 2>/dev/null || true
+        terraform import $VARS module.ecr.aws_ecr_repository.app laura-api 2>/dev/null || true
 
         # IAM Roles
-        terraform import module.ecs.aws_iam_role.ecs_execution laura-ecs-execution-role 2>/dev/null || true
-        terraform import module.ecs.aws_iam_role.ecs_task      laura-ecs-task-role      2>/dev/null || true
+        terraform import $VARS module.ecs.aws_iam_role.ecs_execution laura-ecs-execution-role 2>/dev/null || true
+        terraform import $VARS module.ecs.aws_iam_role.ecs_task      laura-ecs-task-role      2>/dev/null || true
 
         # CloudWatch Log Group
-        terraform import module.ecs.aws_cloudwatch_log_group.app /ecs/laura 2>/dev/null || true
+        terraform import $VARS module.ecs.aws_cloudwatch_log_group.app /ecs/laura 2>/dev/null || true
 
         # ECS Cluster
-        terraform import module.ecs.aws_ecs_cluster.main laura-cluster 2>/dev/null || true
+        terraform import $VARS module.ecs.aws_ecs_cluster.main laura-cluster 2>/dev/null || true
 
         # ALB y Target Group (necesitan ARN)
         ALB_ARN=$(aws elbv2 describe-load-balancers \
@@ -95,7 +97,7 @@ jobs:
           --query 'LoadBalancers[0].LoadBalancerArn' \
           --output text 2>/dev/null || echo "")
         if [ -n "$ALB_ARN" ] && [ "$ALB_ARN" != "None" ]; then
-          terraform import module.ecs.aws_lb.main "$ALB_ARN" 2>/dev/null || true
+          terraform import $VARS module.ecs.aws_lb.main "$ALB_ARN" 2>/dev/null || true
         fi
 
         TG_ARN=$(aws elbv2 describe-target-groups \
@@ -103,14 +105,14 @@ jobs:
           --query 'TargetGroups[0].TargetGroupArn' \
           --output text 2>/dev/null || echo "")
         if [ -n "$TG_ARN" ] && [ "$TG_ARN" != "None" ]; then
-          terraform import module.ecs.aws_lb_target_group.app "$TG_ARN" 2>/dev/null || true
+          terraform import $VARS module.ecs.aws_lb_target_group.app "$TG_ARN" 2>/dev/null || true
         fi
 
         # RDS Subnet Group
-        terraform import module.rds.aws_db_subnet_group.main laura-db-subnet-group 2>/dev/null || true
+        terraform import $VARS module.rds.aws_db_subnet_group.main laura-db-subnet-group 2>/dev/null || true
 
         # RDS Instance
-        terraform import module.rds.aws_db_instance.postgres laura-postgres 2>/dev/null || true
+        terraform import $VARS module.rds.aws_db_instance.postgres laura-postgres 2>/dev/null || true
 
     - name: Terraform Plan
       run: |
