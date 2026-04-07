@@ -73,46 +73,41 @@ jobs:
       run: terraform validate
 
     # ── Importa recursos que ya existen en AWS pero no en el state ────
-    # Si ya están en el state el import falla silenciosamente (|| true)
-    - name: 📥 Importar recursos AWS existentes al state
+    - name: 🧹 Limpiar recursos residuales en AWS
       run: |
-        VARS="-var=\"db_password=${{ secrets.DB_PASSWORD }}\" -var=\"keycloak_issuer_uri=${{ secrets.KEYCLOAK_ISSUER_URI }}\""
+        echo "Borrando recursos que quedaron huérfanos en AWS..."
         
-        # ECR Repository
-        terraform import $VARS module.ecr.aws_ecr_repository.app laura-api 2>/dev/null || true
+        # 1. ECR Repository
+        aws ecr delete-repository --repository-name laura-api --force 2>/dev/null || true
 
-        # IAM Roles
-        terraform import $VARS module.ecs.aws_iam_role.ecs_execution laura-ecs-execution-role 2>/dev/null || true
-        terraform import $VARS module.ecs.aws_iam_role.ecs_task      laura-ecs-task-role      2>/dev/null || true
+        # 2. CloudWatch Log Group
+        aws logs delete-log-group --log-group-name /ecs/laura 2>/dev/null || true
 
-        # CloudWatch Log Group
-        terraform import $VARS module.ecs.aws_cloudwatch_log_group.app /ecs/laura 2>/dev/null || true
-
-        # ECS Cluster
-        terraform import $VARS module.ecs.aws_ecs_cluster.main laura-cluster 2>/dev/null || true
-
-        # ALB y Target Group (necesitan ARN)
-        ALB_ARN=$(aws elbv2 describe-load-balancers \
-          --names laura-alb \
-          --query 'LoadBalancers[0].LoadBalancerArn' \
-          --output text 2>/dev/null || echo "")
+        # 3. ALB y Target Group
+        ALB_ARN=$(aws elbv2 describe-load-balancers --names laura-alb --query 'LoadBalancers[0].LoadBalancerArn' --output text 2>/dev/null || echo "")
         if [ -n "$ALB_ARN" ] && [ "$ALB_ARN" != "None" ]; then
-          terraform import $VARS module.ecs.aws_lb.main "$ALB_ARN" 2>/dev/null || true
+          aws elbv2 delete-load-balancer --load-balancer-arn "$ALB_ARN" 2>/dev/null || true
+          echo "Esperando a que se borre el ALB..."
+          sleep 10
         fi
 
-        TG_ARN=$(aws elbv2 describe-target-groups \
-          --names laura-tg \
-          --query 'TargetGroups[0].TargetGroupArn' \
-          --output text 2>/dev/null || echo "")
+        TG_ARN=$(aws elbv2 describe-target-groups --names laura-tg --query 'TargetGroups[0].TargetGroupArn' --output text 2>/dev/null || echo "")
         if [ -n "$TG_ARN" ] && [ "$TG_ARN" != "None" ]; then
-          terraform import $VARS module.ecs.aws_lb_target_group.app "$TG_ARN" 2>/dev/null || true
+          aws elbv2 delete-target-group --target-group-arn "$TG_ARN" 2>/dev/null || true
         fi
 
-        # RDS Subnet Group
-        terraform import $VARS module.rds.aws_db_subnet_group.main laura-db-subnet-group 2>/dev/null || true
+        # 4. IAM Roles (requieren quitar policies primero)
+        aws iam detach-role-policy --role-name laura-ecs-execution-role --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy 2>/dev/null || true
+        aws iam delete-role-policy --role-name laura-ecs-execution-role --policy-name laura-ecs-ssm-read 2>/dev/null || true
+        aws iam delete-role --role-name laura-ecs-execution-role 2>/dev/null || true
+        aws iam delete-role --role-name laura-ecs-task-role 2>/dev/null || true
 
-        # RDS Instance
-        terraform import $VARS module.rds.aws_db_instance.postgres laura-postgres 2>/dev/null || true
+        # 5. RDS (Subnet group)
+        # Si la base de datos sigue viva, no dejará borrar el subnet group. Lanzamos el borrado por si acaso.
+        aws rds delete-db-instance --db-instance-identifier laura-postgres --skip-final-snapshot 2>/dev/null || true
+        aws rds delete-db-subnet-group --db-subnet-group-name laura-db-subnet-group 2>/dev/null || true
+        
+        echo "Limpieza completada. Procediendo con Terraform..."
 
     - name: Terraform Plan
       run: |
