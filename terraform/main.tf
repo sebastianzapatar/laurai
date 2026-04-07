@@ -16,7 +16,7 @@ terraform {
   backend "s3" {
     bucket         = "laura-terraform-state"
     key            = "lauracanceleatiempo/terraform.tfstate"
-    region         = "ca-central-1"
+    region         = "us-east-2"
     dynamodb_table = "laura-terraform-locks"
     encrypt        = true
   }
