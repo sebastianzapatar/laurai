@@ -14,7 +14,7 @@ terraform {
 
   # Backend remoto en S3 — el workflow lo crea automáticamente si no existe
   backend "s3" {
-    bucket         = "laura-terraform-state"
+    bucket         = "laura-tf-state-xyz89b"
     key            = "lauracanceleatiempo/terraform.tfstate"
     region         = "us-east-2"
     dynamodb_table = "laura-terraform-locks"

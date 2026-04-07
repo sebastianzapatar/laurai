@@ -42,11 +42,11 @@ jobs:
     - name: 🪣 Crear bucket S3 para Terraform state (si no existe)
       run: |
         aws s3api create-bucket \
-          --bucket laura-terraform-state \
+          --bucket laura-tf-state-xyz89b \
           --region us-east-2 \
           --create-bucket-configuration LocationConstraint=us-east-2 2>/dev/null || true
         aws s3api put-bucket-versioning \
-          --bucket laura-terraform-state \
+          --bucket laura-tf-state-xyz89b \
           --versioning-configuration Status=Enabled 2>/dev/null || true
       working-directory: .
 
