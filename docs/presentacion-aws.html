@@ -125,7 +125,7 @@
         strong { color: var(--text-primary); font-weight: 600; }
         em { color: var(--accent-2); font-style: normal; }
         a { color: var(--accent-2); }
-        code.inline, p code, li code, td code, h3 code {
+        code.inline, p code, li code, td code, h3 code, .checklist code, .item code {
             font-family: 'JetBrains Mono', monospace; font-size: 0.86em;
             background: rgba(108, 92, 231, 0.15); color: #d6d0ff;
             padding: 1px 6px; border-radius: 4px;
@@ -228,6 +228,8 @@
         .cat-badge.datos     { background: rgba(255, 234, 167, 0.14); color: var(--accent-5); border: 1px solid rgba(255, 234, 167, 0.3); }
         .cat-badge.seguridad { background: rgba(108, 92, 231, 0.18); color: var(--accent-2); border: 1px solid rgba(108, 92, 231, 0.35); }
         .cat-badge.cicd      { background: rgba(116, 185, 255, 0.14); color: var(--accent-7); border: 1px solid rgba(116, 185, 255, 0.3); }
+        .cat-badge.aws       { background: rgba(255, 153, 0, 0.14); color: #ffb84d; border: 1px solid rgba(255, 153, 0, 0.35); }
+        .cat-badge.github    { background: rgba(116, 185, 255, 0.14); color: var(--accent-7); border: 1px solid rgba(116, 185, 255, 0.3); }
         .cat-badge.paso      { background: rgba(85, 239, 196, 0.14); color: var(--accent-6); border: 1px solid rgba(85, 239, 196, 0.3); }
         .part-badge {
             font-size: 0.72rem; color: var(--text-muted);
@@ -306,6 +308,46 @@
             border-bottom: 1px dashed rgba(162, 155, 254, 0.35);
         }
         .source-link:hover { color: var(--accent-2); }
+
+        /* Ruta de clics en la consola: <div class="click-path"><span>IAM</span><i>›</i>… */
+        .click-path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .click-path.inline-path { display: inline-flex; vertical-align: middle; }
+        .click-path span {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+            padding: 4px 10px; border-radius: 6px;
+            background: rgba(108, 92, 231, 0.15); color: #d6d0ff; border: 1px solid rgba(108, 92, 231, 0.3);
+        }
+        .click-path i { font-style: normal; color: var(--accent-2); font-weight: 700; }
+
+        /* Títulos de las partes A / B / C */
+        .part-title {
+            font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 6px 12px; border-radius: var(--radius-sm); display: inline-block;
+        }
+        .part-title.aws    { background: rgba(255, 153, 0, 0.12); color: #ffb84d; }
+        .part-title.github { background: rgba(116, 185, 255, 0.12); color: var(--accent-7); }
+        .part-title.deploy { background: rgba(85, 239, 196, 0.12); color: var(--accent-6); }
+
+        /* Checklist interactiva */
+        .checklist label {
+            display: flex; gap: 12px; align-items: flex-start; margin-top: 10px;
+            padding: 10px 14px; border-radius: var(--radius-sm); cursor: pointer;
+            background: var(--bg-glass); border: 1px solid var(--border-glass); transition: var(--transition);
+        }
+        .checklist label:hover { border-color: rgba(108, 92, 231, 0.4); }
+        .checklist label span { font-size: 0.95rem; line-height: 1.5; color: var(--text-secondary); }
+        .checklist input { accent-color: var(--accent-6); width: 18px; height: 18px; margin-top: 3px; flex-shrink: 0; }
+        .checklist label.done { border-color: rgba(85, 239, 196, 0.35); background: rgba(85, 239, 196, 0.06); }
+        .checklist label.done span { color: var(--text-muted); text-decoration: line-through; }
+
+        /* Botón copiar en bloques de código con data-copy */
+        .copy-btn {
+            position: absolute; top: 5px; left: 12px;
+            font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600;
+            padding: 2px 10px; border-radius: 10px; cursor: pointer;
+            background: rgba(108, 92, 231, 0.25); color: #d6d0ff; border: 1px solid rgba(108, 92, 231, 0.45);
+        }
+        .copy-btn:hover { background: rgba(108, 92, 231, 0.45); }
 
         /* ============================================================
            TABLES / BADGES / TAGS
@@ -526,8 +568,8 @@
                     <p>El workflow de GitHub Actions: un job de <strong>Terraform</strong> y un job de <strong>build &amp; deploy</strong>.</p>
                 </div>
                 <div class="glass-card" style="border-top: 3px solid var(--accent-6);">
-                    <h3 style="color: var(--accent-6);">5 · Paso a paso (8)</h3>
-                    <p>Desde los prerrequisitos hasta destruir todo: local → secrets → push → verificar → destruir.</p>
+                    <h3 style="color: var(--accent-6);">5 · Paso a paso</h3>
+                    <p><strong>A</strong> · qué crear en AWS → <strong>B</strong> · qué crear en GitHub → <strong>C</strong> · desplegar, verificar y destruir. Con checklist al final.</p>
                 </div>
             </div>
 
@@ -1190,7 +1232,7 @@ ecs/api-container/3f9c…  Tomcat started on port 6969 (http)</pre>
 
             <div class="warn-box">
                 <h3>⚠️ Los nombres de bucket son globales</h3>
-                <p>Si haces un fork del proyecto en otra cuenta, cambia <code>laura-tf-state-xyz89b</code> y <code>laura-tf-locks-xyz89b</code> en <code>terraform/main.tf</code> <strong>y</strong> en <code>.github/workflows/aws-ecs.yml</code>; si no, la creación del bucket falla porque ese nombre ya es de otra cuenta.</p>
+                <p>Si despliegas en otra cuenta (por ejemplo, desde un fork), el bucket <code>laura-tf-state-xyz89b</code> ya es de otra persona y la creación falla. Cómo renombrarlo en los 3 archivos que lo usan: <a href="#b3" data-goto="b3">paso B3</a>.</p>
             </div>
         </div>
     </div>
@@ -1204,7 +1246,7 @@ ecs/api-container/3f9c…  Tomcat started on port 6969 (http)</pre>
                 <span class="part-badge">.github/workflows/aws-ecs.yml</span>
             </div>
             <h2 class="slide-title gradient-5">El pipeline: 2 jobs</h2>
-            <p class="slide-subtitle">Se dispara con cada <code class="inline">push</code> a <code class="inline">main</code></p>
+            <p class="slide-subtitle">Se dispara con cada <code class="inline">push</code> a <code class="inline">main</code>, salvo si solo cambian <code class="inline">docs/</code> o archivos <code class="inline">.md</code></p>
 
             <div class="two-cols">
                 <div class="glass-card" style="border-top: 3px solid var(--accent-2);">
@@ -1246,58 +1288,129 @@ ecs/api-container/3f9c…  Tomcat started on port 6969 (http)</pre>
     <div class="slide" id="pasos" data-toc="Paso a paso" data-toc-group="Paso a paso" data-section="Paso a paso">
         <span class="slide-number-badge"></span>
         <div class="slide-inner center">
-            <div class="section-number">Sección 5</div>
-            <div class="section-icon">🧭</div>
+            <div class="section-number">Sección 5 · 🧭</div>
             <h2 class="slide-title gradient-2" style="font-size: 3.5rem;">Paso a paso</h2>
-            <p class="slide-subtitle">Lo que hay que hacer, en orden, para tener la API en AWS</p>
-            <div class="pattern-index">
-                <div class="item" data-goto="p0"><strong>0 · Prerrequisitos</strong><span>Cuenta, CLI, herramientas</span></div>
-                <div class="item" data-goto="p1"><strong>1 · Probar en local</strong><span>docker compose</span></div>
-                <div class="item" data-goto="p2"><strong>2 · Usuario IAM</strong><span>Llaves para el pipeline</span></div>
-                <div class="item" data-goto="p3"><strong>3 · Secrets de GitHub</strong><span>3 secrets + environment</span></div>
-                <div class="item" data-goto="p4"><strong>4 · Push a main</strong><span>Dispara el pipeline</span></div>
-                <div class="item" data-goto="p5"><strong>5 · Verificar</strong><span>curl al ALB + logs</span></div>
-                <div class="item" data-goto="p6"><strong>6 · Alternativa manual</strong><span>terraform desde tu PC</span></div>
-                <div class="item" data-goto="p7"><strong>7 · Destruir</strong><span>Para dejar de pagar</span></div>
+            <p class="slide-subtitle">Tres partes, en este orden. Haz clic en un paso para saltar a él.</p>
+
+            <div class="cards-grid-3" style="text-align: left;">
+                <div>
+                    <div class="part-title aws">Parte A · En AWS</div>
+                    <div class="pattern-index" style="grid-template-columns: 1fr; margin-top: 0.6em;">
+                        <div class="item" data-goto="a1"><strong>A1 · Cuenta, región y alerta</strong><span>Billing → Budgets</span></div>
+                        <div class="item" data-goto="a2"><strong>A2 · Crear usuario IAM</strong><span>IAM → Users</span></div>
+                        <div class="item" data-goto="a3"><strong>A3 · Darle permisos</strong><span>AdministratorAccess o política</span></div>
+                        <div class="item" data-goto="a4"><strong>A4 · Crear access key</strong><span>Las 2 llaves para GitHub</span></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="part-title github">Parte B · En GitHub</div>
+                    <div class="pattern-index" style="grid-template-columns: 1fr; margin-top: 0.6em;">
+                        <div class="item" data-goto="b1"><strong>B1 · Environment <code>production</code></strong><span>Settings → Environments</span></div>
+                        <div class="item" data-goto="b2"><strong>B2 · Los 3 secrets</strong><span>Llaves + contraseña de la BD</span></div>
+                        <div class="item" data-goto="b3"><strong>B3 · Solo si es otra cuenta</strong><span>Renombrar bucket y tabla</span></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="part-title deploy">Parte C · Desplegar</div>
+                    <div class="pattern-index" style="grid-template-columns: 1fr; margin-top: 0.6em;">
+                        <div class="item" data-goto="c1"><strong>C1 · Probar en local</strong><span>docker compose</span></div>
+                        <div class="item" data-goto="c2"><strong>C2 · Push y seguir el pipeline</strong><span>GitHub → Actions</span></div>
+                        <div class="item" data-goto="c3"><strong>C3 · Verificar</strong><span>curl al ALB</span></div>
+                        <div class="item" data-goto="c4"><strong>C4 · Si algo falla</strong><span>Errores comunes</span></div>
+                        <div class="item" data-goto="c5"><strong>C5 · Alternativa manual</strong><span>Terraform desde tu PC</span></div>
+                        <div class="item" data-goto="c6"><strong>C6 · Destruir</strong><span>Para dejar de pagar</span></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ===================== PASO 0 ===================== -->
-    <div class="slide" id="p0" data-toc="0 · Prerrequisitos" data-section="Paso a paso · 0">
+    <!-- ===================== QUÉ CREAR ===================== -->
+    <div class="slide" id="que-crear" data-toc="¿Qué tengo que crear?" data-section="Paso a paso · Qué crear">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <h2 class="slide-title gradient-2">¿Qué tengo que crear yo?</h2>
+            <p class="slide-subtitle">Muy poco. Casi todo lo crea el pipeline; tú solo le das <em>acceso</em> y <em>secretos</em>.</p>
+
+            <div class="cards-grid-3">
+                <div class="glass-card" style="border-top: 3px solid #ff9900;">
+                    <h3 style="color: #ffb84d;">☁️ Tú, en AWS</h3>
+                    <ol class="participants">
+                        <li>Una <strong>cuenta de AWS</strong> (con tarjeta registrada).</li>
+                        <li>Un <strong>usuario IAM</strong> para GitHub Actions, por ejemplo <code>github-actions-laura</code>.</li>
+                        <li><strong>Permisos</strong> para ese usuario.</li>
+                        <li>Una <strong>access key</strong> de ese usuario: <em>Access key ID</em> + <em>Secret access key</em>.</li>
+                    </ol>
+                    <p class="mt-1" style="font-size: 0.9rem;">Recomendado: una <strong>alerta de presupuesto</strong>.</p>
+                </div>
+                <div class="glass-card" style="border-top: 3px solid var(--accent-2);">
+                    <h3>🐙 Tú, en GitHub</h3>
+                    <ol class="participants">
+                        <li>El <strong>repositorio</strong> con este código (ya existe).</li>
+                        <li>Un <strong>environment</strong> llamado <code>production</code>.</li>
+                        <li><strong>3 secrets</strong> dentro de él:
+                            <br><code>AWS_ACCESS_KEY_ID</code>
+                            <br><code>AWS_SECRET_ACCESS_KEY</code>
+                            <br><code>DB_PASSWORD</code>
+                        </li>
+                    </ol>
+                </div>
+                <div class="glass-card" style="border-top: 3px solid var(--accent-6);">
+                    <h3 style="color: var(--accent-6);">🤖 Lo crea el pipeline</h3>
+                    <ul>
+                        <li><strong>Bucket S3</strong> y <strong>tabla DynamoDB</strong> del estado (los crea el workflow).</li>
+                        <li><strong>VPC</strong>, subredes, IGW, NAT, rutas.</li>
+                        <li><strong>Security groups</strong>.</li>
+                        <li><strong>ECR</strong>, <strong>ECS</strong>, <strong>ALB</strong>.</li>
+                        <li><strong>RDS</strong> PostgreSQL.</li>
+                        <li><strong>SSM</strong>, roles <strong>IAM</strong> de ECS, <strong>CloudWatch</strong>.</li>
+                        <li>La <strong>imagen Docker</strong> y el despliegue.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="warn-box">
+                <h3>🚫 No crees a mano nada de la columna verde</h3>
+                <p>Si creas, por ejemplo, un repositorio ECR llamado <code>laura-api</code> desde la consola, Terraform fallará con <em>"already exists"</em> porque ese recurso no está en su estado.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== A1 ===================== -->
+    <div class="slide" id="a1" data-toc="A1 · Cuenta, región y alerta" data-toc-group="Parte A · AWS" data-section="Paso a paso · A1">
         <span class="slide-number-badge"></span>
         <div class="slide-inner">
             <div class="pattern-head">
-                <span class="cat-badge paso">🧭 Paso 0</span>
-                <span class="part-badge">una sola vez</span>
+                <span class="cat-badge aws">☁️ Paso A1</span>
+                <span class="part-badge">Consola de AWS</span>
             </div>
-            <h2 class="slide-title gradient-2">Prerrequisitos</h2>
-            <p class="slide-subtitle">Lo que necesitas instalado y configurado antes de empezar</p>
+            <h2 class="slide-title gradient-2">Cuenta, región y alerta de costos</h2>
+            <p class="slide-subtitle">Antes de crear nada, asegúrate de estar en el lugar correcto</p>
 
             <div class="two-cols">
-                <table class="compare-table">
-                    <tr><th>Herramienta</th><th>Para qué</th></tr>
-                    <tr><td><strong>Cuenta de AWS</strong></td><td>Donde vivirá todo (región <code>us-east-2</code>)</td></tr>
-                    <tr><td><strong>AWS CLI v2</strong></td><td>Probar, ver logs, destruir a mano</td></tr>
-                    <tr><td><strong>Terraform ≥ 1.5</strong></td><td>Solo si vas a hacer el paso 6 (el CI usa 1.7.0)</td></tr>
-                    <tr><td><strong>Docker</strong></td><td>Probar en local con <code>compose.yml</code></td></tr>
-                    <tr><td><strong>Java 25</strong></td><td>Correr los tests con <code>./mvnw test</code></td></tr>
-                    <tr><td><strong>Repositorio en GitHub</strong></td><td>Donde corre el pipeline</td></tr>
-                </table>
                 <div>
-                    <pre class="code-block" data-lang="bash" data-label="verificar">aws --version
-terraform -version
-docker --version
-java -version
+                    <h3>1️⃣ Entra a la consola</h3>
+                    <p>Abre <a href="https://console.aws.amazon.com/" target="_blank" rel="noopener">console.aws.amazon.com</a> e inicia sesión. Si no tienes cuenta: <em>Create an AWS account</em>. Pide correo, tarjeta y verificación por teléfono.</p>
 
-# credenciales de AWS en tu máquina
-aws configure
-aws sts get-caller-identity</pre>
+                    <h3 class="mt-1">2️⃣ Elige la región Ohio</h3>
+                    <p>Arriba a la derecha está el selector de región. Elige:</p>
+                    <div class="click-path mt-1"><span>US East (Ohio) us-east-2</span></div>
+                    <p class="mt-1">Todo el proyecto vive ahí. Si estás en otra región, <strong>no verás</strong> el cluster, la base de datos ni el ALB y parecerá que no se creó nada.</p>
+                </div>
+                <div>
+                    <h3>3️⃣ Crea una alerta de presupuesto <span class="badge yellow">recomendado</span></h3>
+                    <div class="click-path"><span>Billing and Cost Management</span><i>›</i><span>Budgets</span><i>›</i><span>Create budget</span></div>
+                    <ol class="participants mt-1">
+                        <li>Elige <em>Use a template</em> → <em>Monthly cost budget</em>.</li>
+                        <li>Monto: por ejemplo <strong>20 USD</strong>.</li>
+                        <li>Escribe tu correo en <em>Email recipients</em>.</li>
+                        <li><em>Create budget</em>.</li>
+                    </ol>
                     <div class="tip">
-                        <div class="icon">📄</div>
+                        <div class="icon">💸</div>
                         <div>
-                            <h3>Permisos</h3>
-                            <p>El detalle de los permisos de IAM que necesita el usuario del pipeline está en <code>aws_permissions.pdf</code>, en la raíz del repo.</p>
+                            <h3>¿Por qué?</h3>
+                            <p>Esta infraestructura cuesta unos <strong>3 USD por día</strong> encendida. Si olvidas destruirla, el correo te avisa antes de que la factura crezca.</p>
                         </div>
                     </div>
                 </div>
@@ -1305,12 +1418,354 @@ aws sts get-caller-identity</pre>
         </div>
     </div>
 
-    <!-- ===================== PASO 1 ===================== -->
-    <div class="slide" id="p1" data-toc="1 · Probar en local" data-section="Paso a paso · 1">
+    <!-- ===================== A2 ===================== -->
+    <div class="slide" id="a2" data-toc="A2 · Crear usuario IAM" data-section="Paso a paso · A2">
         <span class="slide-number-badge"></span>
         <div class="slide-inner">
             <div class="pattern-head">
-                <span class="cat-badge paso">🧭 Paso 1</span>
+                <span class="cat-badge aws">☁️ Paso A2</span>
+                <span class="part-badge">Consola de AWS → IAM</span>
+            </div>
+            <h2 class="slide-title gradient-2">Crear el usuario IAM del pipeline</h2>
+            <p class="slide-subtitle">La identidad con la que GitHub Actions entra a tu cuenta de AWS</p>
+
+            <div class="intent-box">
+                <span class="label">🎯 Para qué</span>
+                <p>GitHub no puede usar tu usuario personal ni tu contraseña. Necesita un usuario propio, <strong>solo para máquinas</strong>, con llaves que puedas revocar cuando quieras.</p>
+            </div>
+
+            <div class="two-cols">
+                <div>
+                    <div class="click-path"><span>Buscar "IAM"</span><i>›</i><span>Users</span><i>›</i><span>Create user</span></div>
+                    <ol class="participants mt-1">
+                        <li><strong>User name</strong>: <code>github-actions-laura</code>.</li>
+                        <li><strong>No</strong> marques <em>"Provide user access to the AWS Management Console"</em>: este usuario nunca entra a la consola.</li>
+                        <li><em>Next</em>. Llegas a la pantalla de permisos, que es el <strong>paso A3</strong>.</li>
+                    </ol>
+                </div>
+                <div>
+                    <pre class="uml"><span class="kw">Tu cuenta AWS</span>
+ ├── 👤 tu usuario (root / admin)     ← tú, en la consola
+ └── 🤖 <span class="st">github-actions-laura</span>          ← GitHub Actions
+        ├── permisos (paso A3)
+        └── access key (paso A4)
+              ├── <span class="tp">AWS_ACCESS_KEY_ID</span>
+              └── <span class="tp">AWS_SECRET_ACCESS_KEY</span></pre>
+                    <p class="mt-1" style="font-size: 0.9rem; color: var(--text-muted);">Los nombres de los botones pueden variar un poco si la consola está en español.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== A3 ===================== -->
+    <div class="slide" id="a3" data-toc="A3 · Darle permisos" data-section="Paso a paso · A3">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <div class="pattern-head">
+                <span class="cat-badge aws">☁️ Paso A3</span>
+                <span class="part-badge">Set permissions</span>
+            </div>
+            <h2 class="slide-title gradient-2">Darle permisos al usuario</h2>
+            <p class="slide-subtitle">Elige <strong>una</strong> de las dos opciones</p>
+
+            <div class="two-cols">
+                <div class="glass-card" style="border-top: 3px solid var(--accent-6);">
+                    <h3 style="color: var(--accent-6);">Opción 1 · Rápida (cuenta de pruebas / clase)</h3>
+                    <ol class="participants">
+                        <li>En <em>Permissions options</em> elige <strong>Attach policies directly</strong>.</li>
+                        <li>Busca <code>AdministratorAccess</code> y márcala.</li>
+                        <li><em>Next</em> → <em>Create user</em>.</li>
+                    </ol>
+                    <div class="warn-box">
+                        <h3>⚠️ Ojo</h3>
+                        <p>Con esas llaves se puede hacer <strong>cualquier cosa</strong> en la cuenta. Úsala solo en una cuenta de pruebas.</p>
+                    </div>
+                </div>
+                <div class="glass-card" style="border-top: 3px solid var(--accent-2);">
+                    <h3>Opción 2 · Solo lo necesario</h3>
+                    <ol class="participants">
+                        <li>En otra pestaña: <span class="click-path inline-path"><span>IAM</span><i>›</i><span>Policies</span><i>›</i><span>Create policy</span></span></li>
+                        <li>Pestaña <strong>JSON</strong>: borra lo que hay y pega el contenido de <code>docs/iam-policy-github-actions.json</code> (siguiente slide).</li>
+                        <li><em>Next</em>, nombre: <code>laura-github-actions</code> → <em>Create policy</em>.</li>
+                        <li>Vuelve a la creación del usuario → <strong>Attach policies directly</strong> → busca <code>laura-github-actions</code> → <em>Next</em> → <em>Create user</em>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="tip">
+                <div class="icon">📄</div>
+                <div>
+                    <h3>¿Y <code>aws_permissions.pdf</code>?</h3>
+                    <p>A esa lista le faltan permisos que el pipeline sí usa: S3 y DynamoDB para el estado, <code>iam:CreateServiceLinkedRole</code>, las lifecycle policies de ECR… La política JSON del repo sí los incluye.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== A3 · POLÍTICA ===================== -->
+    <div class="slide" id="a3-json" data-section="Paso a paso · A3 · Política JSON">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <div class="pattern-head">
+                <span class="cat-badge aws">☁️ Paso A3</span>
+                <span class="part-badge">docs/iam-policy-github-actions.json</span>
+            </div>
+            <h2 class="slide-title gradient-2">La política mínima (opción 2)</h2>
+            <p class="slide-subtitle">Botón <em>Copiar</em> → pegar en la pestaña JSON de <em>Create policy</em></p>
+
+            <div class="two-cols-wide">
+                <pre class="code-block" data-lang="json" data-label="iam-policy-github-actions.json" data-copy>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "InfraestructuraDelProyecto",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "ecs:*",
+        "ecr:*",
+        "rds:*",
+        "ssm:*",
+        "elasticloadbalancing:*",
+        "logs:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "RolesDeEcsDelProyecto",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRole",
+        "iam:GetRole",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:UpdateAssumeRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:GetRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListInstanceProfilesForRole",
+        "iam:PassRole"
+      ],
+      "Resource": "arn:aws:iam::*:role/laura-*"
+    },
+    {
+      "Sid": "RolesVinculadosAServicios",
+      "Effect": "Allow",
+      "Action": "iam:CreateServiceLinkedRole",
+      "Resource": "arn:aws:iam::*:role/aws-service-role/*"
+    },
+    {
+      "Sid": "EstadoDeTerraformEnS3",
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::laura-tf-state-xyz89b",
+        "arn:aws:s3:::laura-tf-state-xyz89b/*"
+      ]
+    },
+    {
+      "Sid": "CandadoDeTerraformEnDynamoDB",
+      "Effect": "Allow",
+      "Action": "dynamodb:*",
+      "Resource": "arn:aws:dynamodb:*:*:table/laura-tf-locks-xyz89b"
+    }
+  ]
+}</pre>
+                <div>
+                    <h3>Qué permite cada bloque</h3>
+                    <table class="compare-table">
+                        <tr><th>Sid</th><th>Para qué</th></tr>
+                        <tr><td><code>Infraestructura…</code></td><td>Crear la red, ECS, ECR, RDS, SSM, ALB y logs</td></tr>
+                        <tr><td><code>RolesDeEcs…</code></td><td>Crear solo los roles <code>laura-*</code> y pasarlos a ECS</td></tr>
+                        <tr><td><code>RolesVinculados…</code></td><td>Primera vez que la cuenta usa ECS, ELB o RDS</td></tr>
+                        <tr><td><code>EstadoDeTerraform…</code></td><td>Leer y escribir el <code>.tfstate</code></td></tr>
+                        <tr><td><code>Candado…</code></td><td>El lock de DynamoDB</td></tr>
+                    </table>
+                    <div class="warn-box">
+                        <h3>⚠️ Si cambias nombres</h3>
+                        <p>Si en el paso B3 renombras el bucket o la tabla, cambia también esos dos nombres aquí.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== A4 ===================== -->
+    <div class="slide" id="a4" data-toc="A4 · Crear access key" data-section="Paso a paso · A4">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <div class="pattern-head">
+                <span class="cat-badge aws">☁️ Paso A4</span>
+                <span class="part-badge">IAM → Users → github-actions-laura</span>
+            </div>
+            <h2 class="slide-title gradient-2">Crear la access key</h2>
+            <p class="slide-subtitle">Las dos "llaves" que vas a pegar en GitHub en el paso B2</p>
+
+            <div class="two-cols">
+                <div>
+                    <div class="click-path"><span>IAM</span><i>›</i><span>Users</span><i>›</i><span>github-actions-laura</span><i>›</i><span>Security credentials</span></div>
+                    <ol class="participants mt-1">
+                        <li>Baja a <strong>Access keys</strong> → <em>Create access key</em>.</li>
+                        <li>Caso de uso: <strong>Application running outside AWS</strong>. Si aparece una casilla de confirmación, márcala.</li>
+                        <li><em>Next</em> → (descripción opcional: <code>github-actions</code>) → <em>Create access key</em>.</li>
+                        <li>Copia los dos valores o usa <strong>Download .csv file</strong>.</li>
+                    </ol>
+                    <div class="warn-box">
+                        <h3>🔑 El secret se muestra una sola vez</h3>
+                        <p>Si cierras la página sin copiarlo, borra esa access key y crea otra. Nunca la pegues en el código ni en un commit.</p>
+                    </div>
+                </div>
+                <div>
+                    <table class="compare-table">
+                        <tr><th>Valor en AWS</th><th>Se ve como</th><th>Secret de GitHub</th></tr>
+                        <tr><td>Access key ID</td><td><code>AKIA…</code> (20 caracteres)</td><td><code>AWS_ACCESS_KEY_ID</code></td></tr>
+                        <tr><td>Secret access key</td><td>40 caracteres</td><td><code>AWS_SECRET_ACCESS_KEY</code></td></tr>
+                    </table>
+                    <pre class="code-block mt-1" data-lang="bash" data-label="opcional: probar las llaves"># guarda las llaves en un perfil local
+aws configure --profile laura
+#   region: us-east-2   output: json
+
+aws sts get-caller-identity --profile laura</pre>
+                    <pre class="output-block mt-1" data-cmd="salida esperada">"Arn": "arn:aws:iam::123456789012:user/github-actions-laura"</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== B1 ===================== -->
+    <div class="slide" id="b1" data-toc="B1 · Environment production" data-toc-group="Parte B · GitHub" data-section="Paso a paso · B1">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <div class="pattern-head">
+                <span class="cat-badge github">🐙 Paso B1</span>
+                <span class="part-badge">github.com/sebastianzapatar/laurai</span>
+            </div>
+            <h2 class="slide-title gradient-5">Crear el environment <code style="-webkit-text-fill-color: #d6d0ff; font-size: 0.8em;">production</code></h2>
+            <p class="slide-subtitle">Los dos jobs del workflow declaran <code class="inline">environment: production</code></p>
+
+            <div class="two-cols">
+                <div>
+                    <div class="click-path"><span>Repositorio</span><i>›</i><span>Settings</span><i>›</i><span>Environments</span><i>›</i><span>New environment</span></div>
+                    <ol class="participants mt-1">
+                        <li><strong>Name</strong>: <code>production</code>, en minúsculas y exacto.</li>
+                        <li><em>Configure environment</em>.</li>
+                        <li>(Opcional) <strong>Required reviewers</strong>: agrega tu usuario si quieres <strong>aprobar a mano</strong> cada despliegue antes de que corra.</li>
+                        <li>No hace falta tocar nada más. En esta misma pantalla está la sección <em>Environment secrets</em> del paso B2.</li>
+                    </ol>
+                </div>
+                <div>
+                    <pre class="code-block" data-lang="yaml" data-label=".github/workflows/aws-ecs.yml">jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    environment: production   # ← este nombre
+    ...
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production   # ← y este
+    needs: terraform</pre>
+                    <div class="tip">
+                        <div class="icon">💡</div>
+                        <div>
+                            <h3>¿Y si no tengo acceso a Settings?</h3>
+                            <p>Solo el dueño del repo o un admin ve <em>Settings</em>. Si el repo es de otra persona, haz un <strong>fork</strong> y sigue estos pasos en tu fork (y luego el paso B3).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== B2 ===================== -->
+    <div class="slide" id="b2" data-toc="B2 · Los 3 secrets" data-section="Paso a paso · B2">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <div class="pattern-head">
+                <span class="cat-badge github">🐙 Paso B2</span>
+                <span class="part-badge">Settings → Environments → production</span>
+            </div>
+            <h2 class="slide-title gradient-5">Agregar los 3 secrets</h2>
+            <p class="slide-subtitle"><em>Environment secrets</em> → <em>Add environment secret</em>, una vez por cada fila</p>
+
+            <div class="table-scroll">
+                <table class="compare-table">
+                    <tr><th>Name (exacto)</th><th>Value</th><th>De dónde sale</th></tr>
+                    <tr><td><code>AWS_ACCESS_KEY_ID</code></td><td><code>AKIA…</code></td><td>Paso A4</td></tr>
+                    <tr><td><code>AWS_SECRET_ACCESS_KEY</code></td><td>las 40 letras del secret</td><td>Paso A4</td></tr>
+                    <tr><td><code>DB_PASSWORD</code></td><td>una contraseña nueva que inventas tú</td><td>Ver abajo ↓</td></tr>
+                </table>
+            </div>
+
+            <div class="two-cols mt-1">
+                <div>
+                    <h3>🔐 Cómo generar <code>DB_PASSWORD</code></h3>
+                    <pre class="code-block" data-lang="bash" data-label="terminal"># 32 caracteres hexadecimales: siempre válida para RDS
+openssl rand -hex 16</pre>
+                    <p class="mt-1">RDS exige 8–128 caracteres y <strong>no</strong> acepta <code>/</code>, <code>@</code>, <code>"</code> ni espacios. Guárdala también en tu gestor de contraseñas.</p>
+                </div>
+                <div>
+                    <div class="warn-box" style="margin-top: 0;">
+                        <h3>⚠️ Escógela una vez y no la cambies</h3>
+                        <p>Terraform crea RDS con esa contraseña y luego la <strong>ignora</strong> (<code>ignore_changes = [password]</code>). Si cambias el secret después, SSM recibe la nueva pero RDS sigue con la vieja y la app <strong>no podrá conectarse</strong>. Para cambiarla: cámbiala también en RDS (<em>Modify</em>) o destruye y vuelve a crear todo.</p>
+                    </div>
+                    <div class="tip">
+                        <div class="icon">🧹</div>
+                        <div>
+                            <h3>Secrets que ya no se usan</h3>
+                            <p>Si existe <code>KEYCLOAK_ISSUER_URI</code> de antes, bórralo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== B3 ===================== -->
+    <div class="slide" id="b3" data-toc="B3 · Solo si es otra cuenta" data-section="Paso a paso · B3">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <div class="pattern-head">
+                <span class="cat-badge github">🐙 Paso B3</span>
+                <span class="part-badge">solo en un fork / cuenta nueva</span>
+            </div>
+            <h2 class="slide-title gradient-5">Renombrar el bucket y la tabla del estado</h2>
+            <p class="slide-subtitle">Sáltate este paso si despliegas en la misma cuenta de AWS de siempre</p>
+
+            <div class="two-cols">
+                <div>
+                    <div class="intent-box">
+                        <span class="label">🎯 Por qué</span>
+                        <p>Los nombres de bucket S3 son <strong>únicos en todo el mundo</strong>. <code>laura-tf-state-xyz89b</code> ya pertenece a la cuenta original, así que en otra cuenta la creación falla.</p>
+                    </div>
+                    <p>Ese error es <strong>silencioso</strong>: el workflow usa <code>|| true</code>. Lo que verás es que <code>terraform init</code> falla con <em>AccessDenied</em> o <em>bucket does not exist</em>.</p>
+                    <p>Si el repo es un fork, GitHub desactiva los workflows: ve a la pestaña <strong>Actions</strong> y pulsa <em>"I understand my workflows, go ahead and enable them"</em>.</p>
+                </div>
+                <div>
+                    <p>Cambia el sufijo <code>xyz89b</code> por algo tuyo (por ejemplo tus iniciales y el año) en <strong>3 archivos</strong>:</p>
+                    <pre class="code-block" data-lang="bash" data-label="terminal (macOS)">NUEVO=ana2026   # tu sufijo
+
+grep -rl xyz89b terraform/main.tf \
+  .github/workflows/aws-ecs.yml \
+  docs/iam-policy-github-actions.json \
+  | xargs sed -i '' "s/xyz89b/$NUEVO/g"
+
+git commit -am "chore: bucket de estado propio"</pre>
+                    <p class="mt-1" style="font-size: 0.9rem; color: var(--text-muted);">En Linux usa <code>sed -i</code> sin las comillas vacías. Si usaste la opción 2 del paso A3, actualiza también la política en IAM.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== C1 ===================== -->
+    <div class="slide" id="c1" data-toc="C1 · Probar en local" data-toc-group="Parte C · Desplegar" data-section="Paso a paso · C1">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <div class="pattern-head">
+                <span class="cat-badge paso">🚀 Paso C1</span>
                 <span class="part-badge">tu máquina</span>
             </div>
             <h2 class="slide-title gradient-2">Probar en local</h2>
@@ -1338,144 +1793,80 @@ docker compose down</pre>
                     <pre class="output-block" data-cmd="salida">{"groups":["liveness","readiness"],"status":"UP"}
 {"id":1,"specialty":"Colombiana","name":"Laura",…}
 [{"id":1,"specialty":"Colombiana","name":"Laura",…}]</pre>
-                    <div class="glass-card solution-card mt-1">
-                        <h3>🐳 Qué levanta <code>compose.yml</code></h3>
-                        <ul>
-                            <li><code>postgres_db</code>: PostgreSQL 16 en el puerto <code>5469</code> del host.</li>
-                            <li><code>api</code>: la imagen del <code>Dockerfile</code> en el puerto <code>6969</code>.</li>
-                            <li>Ya <strong>no</strong> hay contenedor de Keycloak ni hace falta pedir un token para el POST.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===================== PASO 2 ===================== -->
-    <div class="slide" id="p2" data-toc="2 · Usuario IAM" data-section="Paso a paso · 2">
-        <span class="slide-number-badge"></span>
-        <div class="slide-inner">
-            <div class="pattern-head">
-                <span class="cat-badge paso">🧭 Paso 2</span>
-                <span class="part-badge">consola de AWS</span>
-            </div>
-            <h2 class="slide-title gradient-2">Crear el usuario IAM del pipeline</h2>
-            <p class="slide-subtitle">GitHub Actions necesita una identidad en AWS para crear recursos</p>
-
-            <div class="two-cols">
-                <div>
-                    <ol class="participants">
-                        <li>Consola de AWS → <strong>IAM</strong> → <strong>Users</strong> → <em>Create user</em> (por ejemplo <code>github-actions-laura</code>).</li>
-                        <li>Adjunta los permisos que el pipeline usa: VPC/EC2, ECS, ECR, RDS, SSM, IAM (roles), ELB, CloudWatch Logs, S3 y DynamoDB.</li>
-                        <li>En el usuario → <strong>Security credentials</strong> → <em>Create access key</em> → tipo <em>Third-party service</em>.</li>
-                        <li>Copia el <strong>Access key ID</strong> y el <strong>Secret access key</strong>. El secret solo se muestra una vez.</li>
-                    </ol>
-                </div>
-                <div>
-                    <div class="warn-box" style="margin-top: 0;">
-                        <h3>⚠️ Nunca al repositorio</h3>
-                        <p>Las llaves van <strong>solo</strong> en los secrets de GitHub. Si alguna vez se suben a un commit, desactívalas en IAM de inmediato.</p>
-                    </div>
-                    <div class="tip">
-                        <div class="icon">💡</div>
-                        <div>
-                            <h3>Para clase basta con <code>AdministratorAccess</code></h3>
-                            <p>Es lo más rápido para una cuenta de pruebas. En una cuenta real, usa permisos mínimos (ver <code>aws_permissions.pdf</code>) o mejor <strong>OIDC</strong> entre GitHub y AWS, que evita llaves de larga duración.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===================== PASO 3 ===================== -->
-    <div class="slide" id="p3" data-toc="3 · Secrets de GitHub" data-section="Paso a paso · 3">
-        <span class="slide-number-badge"></span>
-        <div class="slide-inner">
-            <div class="pattern-head">
-                <span class="cat-badge paso">🧭 Paso 3</span>
-                <span class="part-badge">GitHub → Settings</span>
-            </div>
-            <h2 class="slide-title gradient-2">Configurar los secrets en GitHub</h2>
-            <p class="slide-subtitle">Settings → Environments → <code class="inline">production</code> → Environment secrets</p>
-
-            <div class="two-cols">
-                <div>
-                    <table class="compare-table">
-                        <tr><th>Secret</th><th>Valor</th></tr>
-                        <tr><td><code>AWS_ACCESS_KEY_ID</code></td><td>Del paso 2</td></tr>
-                        <tr><td><code>AWS_SECRET_ACCESS_KEY</code></td><td>Del paso 2</td></tr>
-                        <tr><td><code>DB_PASSWORD</code></td><td>Contraseña para RDS (≥ 8 caracteres, sin <code>/</code>, <code>@</code>, <code>"</code> ni espacios)</td></tr>
+                    <table class="compare-table mt-1">
+                        <tr><th>Necesitas</th><th>Para qué</th></tr>
+                        <tr><td><strong>Docker</strong></td><td><code>docker compose</code></td></tr>
+                        <tr><td><strong>Java 25</strong></td><td><code>./mvnw test</code></td></tr>
+                        <tr><td><strong>Git</strong></td><td>Hacer push (paso C2)</td></tr>
+                        <tr><td>AWS CLI <span class="badge purple">opcional</span></td><td>Ver logs, probar llaves</td></tr>
                     </table>
-                    <div class="tip">
-                        <div class="icon">🧹</div>
-                        <div>
-                            <h3><code>KEYCLOAK_ISSUER_URI</code> ya no se usa</h3>
-                            <p>Si existe de despliegues anteriores, puedes borrarlo. El workflow ya no lo lee.</p>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="glass-card solution-card">
-                        <h3>🏷️ ¿Por qué un <em>environment</em>?</h3>
-                        <p>Los dos jobs declaran <code>environment: production</code>. Eso permite agregar <strong>reglas de protección</strong> (por ejemplo, que alguien apruebe el deploy) y mantiene los secrets separados por entorno.</p>
-                        <p>Si prefieres no usar environments, crea los 3 secrets en <em>Repository secrets</em> y GitHub los encuentra igual.</p>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===================== PASO 4 ===================== -->
-    <div class="slide" id="p4" data-toc="4 · Push a main" data-section="Paso a paso · 4">
+    <!-- ===================== C2 ===================== -->
+    <div class="slide" id="c2" data-toc="C2 · Push y seguir el pipeline" data-section="Paso a paso · C2">
         <span class="slide-number-badge"></span>
         <div class="slide-inner">
             <div class="pattern-head">
-                <span class="cat-badge paso">🧭 Paso 4</span>
+                <span class="cat-badge paso">🚀 Paso C2</span>
                 <span class="part-badge">≈ 15–20 min la primera vez</span>
             </div>
-            <h2 class="slide-title gradient-2">Hacer push a <code style="-webkit-text-fill-color: #d6d0ff; font-size: 0.8em;">main</code></h2>
-            <p class="slide-subtitle">El pipeline hace el resto</p>
+            <h2 class="slide-title gradient-2">Push a <code style="-webkit-text-fill-color: #d6d0ff; font-size: 0.8em;">main</code> y seguir el pipeline</h2>
+            <p class="slide-subtitle">Cada push a <code class="inline">main</code> despliega (excepto si solo tocas <code class="inline">docs/</code> o <code class="inline">.md</code>). No hay que hacer nada más.</p>
 
             <div class="two-cols">
                 <div>
                     <pre class="code-block" data-lang="bash" data-label="terminal">git add .
-git commit -m "feat: desplegar API en AWS"
+git commit -m "feat: mi cambio"
 git push origin main</pre>
-                    <p class="mt-1">Luego en GitHub → pestaña <strong>Actions</strong> → run <em>"CI/CD → Build, Push ECR &amp; Deploy ECS"</em>.</p>
-                    <div class="warn-box">
-                        <h3>⏱️ La primera vez tarda</h3>
-                        <p>RDS tarda ~5–10 min en estar disponible y el NAT Gateway ~2 min. En los siguientes pushes Terraform no cambia nada y solo corre el build &amp; deploy.</p>
-                    </div>
+                    <div class="click-path mt-1"><span>Repositorio</span><i>›</i><span>Actions</span><i>›</i><span>run con tu mensaje de commit</span></div>
+                    <ol class="participants mt-1">
+                        <li><strong>🏗️ Infraestructura (Terraform)</strong>: crea o actualiza AWS. La primera vez tarda ~10–15 min, casi todo esperando a RDS.</li>
+                        <li><strong>🚀 Build &amp; Deploy</strong>: construye la imagen, la sube a ECR y espera a que ECS quede estable (~5 min).</li>
+                        <li>Al terminar, abre el run y baja al <strong>Summary</strong>: ahí está la tabla <em>"🚀 Deploy exitoso!"</em> con la <strong>URL de la API</strong>.</li>
+                    </ol>
                 </div>
                 <div>
-                    <pre class="output-block" data-cmd="Terraform Apply (primer run)">module.network.aws_vpc.main: Creating...
-module.ecr.aws_ecr_repository.app: Creating...
-module.network.aws_nat_gateway.main: Still creating... [1m50s]
-module.rds.aws_db_instance.postgres: Still creating... [6m10s]
-module.ssm.aws_ssm_parameter.db_url: Creating...
-module.ecs.aws_ecs_service.app: Creating...
+                    <pre class="output-block" data-cmd="Summary del run">🚀 Deploy exitoso!
 
-Apply complete! Resources: 37 added, 0 changed, 0 destroyed.
-
-Outputs:
-alb_dns_name = "laura-alb-123456789.us-east-2.elb.amazonaws.com"</pre>
-                    <p class="mt-1" style="font-size: 0.85rem; color: var(--text-muted);">Salida ilustrativa: el número de recursos y el DNS dependen de tu cuenta.</p>
+🌐 URL de la API   http://laura-alb-123456789.us-east-2.elb.amazonaws.com
+📦 Imagen          …/laura-api:431a24d…
+🕐 Desplegado      2026-10-16 15:42:10 UTC</pre>
+                    <div class="tip">
+                        <div class="icon">⏱️</div>
+                        <div>
+                            <h3>Los siguientes pushes son más rápidos</h3>
+                            <p>Si no cambias nada en <code>terraform/</code>, el job de Terraform termina en ~1 min con <em>"No changes"</em> y solo se despliega la imagen nueva.</p>
+                        </div>
+                    </div>
+                    <div class="tip">
+                        <div class="icon">📝</div>
+                        <div>
+                            <h3>Cambios de documentación no despliegan</h3>
+                            <p>El workflow tiene <code>paths-ignore</code> para <code>docs/**</code> y <code>**.md</code>. Si el mismo push también cambia código o Terraform, sí despliega.</p>
+                        </div>
+                    </div>
+                    <div class="warn-box">
+                        <h3>🔁 No hagas dos pushes seguidos</h3>
+                        <p>Si el primer run aún no termina, el segundo se queda bloqueado por el candado de DynamoDB (<em>Error acquiring the state lock</em>).</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===================== PASO 5 ===================== -->
-    <div class="slide" id="p5" data-toc="5 · Verificar" data-section="Paso a paso · 5">
+    <!-- ===================== C3 ===================== -->
+    <div class="slide" id="c3" data-toc="C3 · Verificar" data-section="Paso a paso · C3">
         <span class="slide-number-badge"></span>
         <div class="slide-inner">
             <div class="pattern-head">
-                <span class="cat-badge paso">🧭 Paso 5</span>
+                <span class="cat-badge paso">🚀 Paso C3</span>
                 <span class="part-badge">después del deploy</span>
             </div>
             <h2 class="slide-title gradient-2">Verificar que todo funciona</h2>
-            <p class="slide-subtitle">La URL aparece en el resumen del run de GitHub Actions</p>
+            <p class="slide-subtitle">Usa la URL del Summary (paso C2)</p>
 
             <div class="two-cols">
                 <pre class="code-block" data-lang="bash" data-label="terminal">ALB=laura-alb-123456789.us-east-2.elb.amazonaws.com
@@ -1496,40 +1887,70 @@ curl -X POST http://$ALB/api/dishes \
 # 4. leer
 curl http://$ALB/api/dishes/chef/1</pre>
                 <div>
-                    <h3>🩺 Si algo falla, revisa en este orden</h3>
-                    <ol class="participants">
-                        <li><strong>GitHub Actions</strong>: ¿qué step falló? ¿Terraform o el deploy?</li>
-                        <li><strong>CloudWatch</strong>: <code>aws logs tail /ecs/laura --follow</code>. Un error de conexión a la BD suele ser la contraseña o el security group.</li>
-                        <li><strong>ECS → Service → Events</strong>: tareas que no arrancan (imagen no encontrada, no puede leer SSM).</li>
-                        <li><strong>EC2 → Target groups → laura-tg</strong>: si los targets están <em>unhealthy</em>, el ALB responde <code>503</code>.</li>
-                    </ol>
+                    <h3>👀 Y en la consola de AWS (región Ohio)</h3>
+                    <table class="compare-table">
+                        <tr><th>Dónde</th><th>Qué deberías ver</th></tr>
+                        <tr><td>ECS → Clusters → <code>laura-cluster</code></td><td>Servicio con <strong>1/1</strong> tareas <em>Running</em></td></tr>
+                        <tr><td>EC2 → Target groups → <code>laura-tg</code></td><td>1 target <span class="badge green">healthy</span></td></tr>
+                        <tr><td>RDS → Databases</td><td><code>laura-postgres</code> <span class="badge green">Available</span></td></tr>
+                        <tr><td>ECR → <code>laura-api</code></td><td>Imagen con tag del commit y <code>latest</code></td></tr>
+                        <tr><td>CloudWatch → Log groups</td><td><code>/ecs/laura</code> con el arranque de Spring</td></tr>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===================== PASO 6 ===================== -->
-    <div class="slide" id="p6" data-toc="6 · Alternativa manual" data-section="Paso a paso · 6">
+    <!-- ===================== C4 ===================== -->
+    <div class="slide" id="c4" data-toc="C4 · Si algo falla" data-section="Paso a paso · C4">
         <span class="slide-number-badge"></span>
         <div class="slide-inner">
             <div class="pattern-head">
-                <span class="cat-badge paso">🧭 Paso 6</span>
+                <span class="cat-badge paso">🚀 Paso C4</span>
+                <span class="part-badge">diagnóstico</span>
+            </div>
+            <h2 class="slide-title gradient-3">Si algo falla: errores comunes</h2>
+            <p class="slide-subtitle">Busca el mensaje en el log del step que quedó en rojo</p>
+
+            <div class="table-scroll">
+                <table class="compare-table">
+                    <tr><th>Mensaje / síntoma</th><th>Causa</th><th>Solución</th></tr>
+                    <tr><td><code>Credentials could not be loaded</code></td><td>Secrets con otro nombre o fuera del environment <code>production</code></td><td>Revisa B1 y B2: nombres exactos</td></tr>
+                    <tr><td><code>InvalidClientTokenId</code> / <code>SignatureDoesNotMatch</code></td><td>Llaves mal copiadas (espacios, incompletas)</td><td>Crea otra access key (A4) y pégala de nuevo</td></tr>
+                    <tr><td><code>… is not authorized to perform: X</code></td><td>Al usuario IAM le falta el permiso <code>X</code></td><td>Agrega el permiso a la política (A3)</td></tr>
+                    <tr><td><code>terraform init</code>: <em>AccessDenied</em> / bucket no existe</td><td>El nombre del bucket es de otra cuenta</td><td>Paso B3</td></tr>
+                    <tr><td><code>MasterUserPassword is not a valid password</code></td><td><code>DB_PASSWORD</code> con caracteres prohibidos</td><td>Genera otra con <code>openssl rand -hex 16</code></td></tr>
+                    <tr><td><code>already exists</code></td><td>Recurso creado a mano o restos de un run viejo</td><td>Bórralo en la consola o haz <code>terraform import</code></td></tr>
+                    <tr><td><code>Error acquiring the state lock</code></td><td>Otro run en curso, o un run cancelado dejó el candado</td><td>Espera; si nada corre: <code>terraform force-unlock &lt;ID&gt;</code></td></tr>
+                    <tr><td>Deploy: <em>service did not stabilize</em> / rollback</td><td>La app no arranca (BD, contraseña, memoria)</td><td><code>aws logs tail /ecs/laura --follow</code></td></tr>
+                    <tr><td>La URL responde <code>503</code></td><td>No hay tareas sanas en el target group</td><td>ECS → servicio → pestaña <em>Events</em> + logs</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== C5 ===================== -->
+    <div class="slide" id="c5" data-toc="C5 · Alternativa manual" data-section="Paso a paso · C5">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <div class="pattern-head">
+                <span class="cat-badge paso">🚀 Paso C5</span>
                 <span class="part-badge">opcional</span>
             </div>
             <h2 class="slide-title gradient-2">Alternativa: Terraform desde tu PC</h2>
-            <p class="slide-subtitle">Útil para ver el <code class="inline">plan</code> antes de hacer push, o para aprender</p>
+            <p class="slide-subtitle">Útil para ver el <code class="inline">plan</code> antes de hacer push, o para aprender. Requiere Terraform ≥ 1.5 y AWS CLI.</p>
 
             <div class="two-cols">
-                <pre class="code-block" data-lang="bash" data-label="terminal">cd terraform
+                <pre class="code-block" data-lang="bash" data-label="terminal">export AWS_PROFILE=laura      # el perfil del paso A4
+cd terraform
 cp terraform.tfvars.example terraform.tfvars
-# editar db_password en terraform.tfvars
+# editar db_password = el mismo valor de DB_PASSWORD
 
 terraform init      # usa el mismo backend S3
 terraform plan      # muestra qué va a cambiar
 terraform apply     # pide confirmación: yes
 
-terraform output alb_dns_name
-terraform output ecr_repository_url</pre>
+terraform output alb_dns_name</pre>
                 <div>
                     <pre class="code-block" data-lang="bash" data-label="subir la imagen a mano">REPO=$(terraform output -raw ecr_repository_url)
 aws ecr get-login-password --region us-east-2 \
@@ -1540,19 +1961,19 @@ aws ecs update-service --cluster laura-cluster \
   --service laura-api-service --force-new-deployment</pre>
                     <div class="warn-box">
                         <h3>⚠️ Comparte el estado con el CI</h3>
-                        <p>Como el backend es S3, tu PC y GitHub Actions ven el <strong>mismo</strong> estado. No hagas <code>apply</code> local mientras corre el pipeline; el candado de DynamoDB bloqueará a uno de los dos.</p>
+                        <p>Tu PC y GitHub Actions ven el <strong>mismo</strong> estado en S3. No hagas <code>apply</code> local mientras corre el pipeline.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===================== PASO 7 ===================== -->
-    <div class="slide" id="p7" data-toc="7 · Destruir" data-section="Paso a paso · 7">
+    <!-- ===================== C6 ===================== -->
+    <div class="slide" id="c6" data-toc="C6 · Destruir" data-section="Paso a paso · C6">
         <span class="slide-number-badge"></span>
         <div class="slide-inner">
             <div class="pattern-head">
-                <span class="cat-badge paso">🧭 Paso 7</span>
+                <span class="cat-badge paso">🚀 Paso C6</span>
                 <span class="part-badge">.github/workflows/destroy-infra.yml</span>
             </div>
             <h2 class="slide-title gradient-3">Destruir la infraestructura</h2>
@@ -1560,10 +1981,11 @@ aws ecs update-service --cluster laura-cluster \
 
             <div class="two-cols">
                 <div>
-                    <ol class="participants">
-                        <li>GitHub → <strong>Actions</strong> → <em>"💣 Destruir Infraestructura"</em>.</li>
-                        <li><em>Run workflow</em> y escribe <code>DESTRUIR</code> en el campo de confirmación.</li>
-                        <li>El job corre <code>terraform destroy</code> con el mismo estado de S3.</li>
+                    <div class="click-path"><span>Actions</span><i>›</i><span>💣 Destruir Infraestructura</span><i>›</i><span>Run workflow</span></div>
+                    <ol class="participants mt-1">
+                        <li>En el campo de confirmación escribe <code>DESTRUIR</code>, en mayúsculas.</li>
+                        <li><em>Run workflow</em>. Tarda ~10 min, sobre todo por RDS y el NAT.</li>
+                        <li>Comprueba en la consola (Ohio) que ya no estén el cluster, la BD ni el ALB.</li>
                     </ol>
                     <pre class="code-block mt-1" data-lang="bash" data-label="o desde tu PC">cd terraform
 terraform destroy -var="db_password=..."</pre>
@@ -1572,8 +1994,8 @@ terraform destroy -var="db_password=..."</pre>
                     <div class="glass-card problem-card">
                         <h3>🗑️ Qué se pierde</h3>
                         <ul>
-                            <li>La base de datos <strong>sin snapshot final</strong> (<code>skip_final_snapshot = true</code>).</li>
-                            <li>Todas las imágenes de ECR (<code>force_delete = true</code>).</li>
+                            <li>La base de datos <strong>sin snapshot final</strong>.</li>
+                            <li>Todas las imágenes de ECR.</li>
                             <li>El DNS del ALB: el próximo deploy tendrá otra URL.</li>
                         </ul>
                     </div>
@@ -1581,9 +2003,45 @@ terraform destroy -var="db_password=..."</pre>
                         <div class="icon">🪣</div>
                         <div>
                             <h3>Lo que <em>no</em> se borra</h3>
-                            <p>El bucket S3 y la tabla DynamoDB del estado los creó el workflow, no Terraform, así que sobreviven al destroy. Cuestan centavos; bórralos a mano si cierras el proyecto.</p>
+                            <p>El bucket S3, la tabla DynamoDB, el usuario IAM y los secrets de GitHub. Así puedes volver a desplegar con un simple push. Si cierras el proyecto: borra el bucket y la tabla, y <strong>desactiva la access key</strong>.</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== CHECKLIST ===================== -->
+    <div class="slide" id="checklist" data-toc="Checklist" data-section="Paso a paso · Checklist">
+        <span class="slide-number-badge"></span>
+        <div class="slide-inner">
+            <h2 class="slide-title gradient-2">Checklist</h2>
+            <p class="slide-subtitle">Márcalo mientras avanzas (se guarda en este navegador)</p>
+
+            <div class="cards-grid-3 checklist" id="checklistBox">
+                <div>
+                    <div class="part-title aws">AWS</div>
+                    <label><input type="checkbox" data-key="a1"><span>Región <strong>us-east-2 (Ohio)</strong> seleccionada</span></label>
+                    <label><input type="checkbox" data-key="a1b"><span>Alerta de presupuesto creada</span></label>
+                    <label><input type="checkbox" data-key="a2"><span>Usuario <code>github-actions-laura</code> creado</span></label>
+                    <label><input type="checkbox" data-key="a3"><span>Permisos asignados (Admin o política JSON)</span></label>
+                    <label><input type="checkbox" data-key="a4"><span>Access key creada y guardada</span></label>
+                </div>
+                <div>
+                    <div class="part-title github">GitHub</div>
+                    <label><input type="checkbox" data-key="b1"><span>Environment <code>production</code> creado</span></label>
+                    <label><input type="checkbox" data-key="b2a"><span>Secret <code>AWS_ACCESS_KEY_ID</code></span></label>
+                    <label><input type="checkbox" data-key="b2b"><span>Secret <code>AWS_SECRET_ACCESS_KEY</code></span></label>
+                    <label><input type="checkbox" data-key="b2c"><span>Secret <code>DB_PASSWORD</code> (y guardado aparte)</span></label>
+                    <label><input type="checkbox" data-key="b3"><span>Bucket/tabla renombrados <em>(solo si es otra cuenta)</em></span></label>
+                </div>
+                <div>
+                    <div class="part-title deploy">Desplegar</div>
+                    <label><input type="checkbox" data-key="c1"><span>Tests y <code>docker compose</code> OK en local</span></label>
+                    <label><input type="checkbox" data-key="c2"><span>Push a <code>main</code> y los 2 jobs en verde</span></label>
+                    <label><input type="checkbox" data-key="c3"><span><code>/actuator/health</code> responde <code>UP</code></span></label>
+                    <label><input type="checkbox" data-key="c3b"><span>POST de chef y plato funcionan</span></label>
+                    <label><input type="checkbox" data-key="c6"><span>Infraestructura destruida al terminar</span></label>
                 </div>
             </div>
         </div>
@@ -1792,7 +2250,8 @@ function goToSlide(n) {
 
 // Saltos directos mediante data-goto="id-del-slide"
 document.querySelectorAll('[data-goto]').forEach(el => {
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (e) => {
+        e.preventDefault();
         const target = document.getElementById(el.dataset.goto);
         if (target) {
             const idx = slides.indexOf(target);
@@ -1843,8 +2302,17 @@ const LANGS = {
         tp: new Set(['true','false','null','string','number','bool','list','map'])
     },
     bash: {
-        kw: new Set(['aws','terraform','docker','git','curl','cd','cp','java','export','echo','./mvnw']),
+        kw: new Set(['aws','terraform','docker','git','curl','cd','cp','java','export','echo','./mvnw',
+                     'openssl','grep','xargs','sed']),
         tp: new Set([])
+    },
+    yaml: {
+        kw: new Set(['jobs','environment','needs']),
+        tp: new Set(['production'])
+    },
+    json: {
+        kw: new Set([]),
+        tp: new Set(['true','false','null'])
     }
 };
 
@@ -1869,10 +2337,47 @@ function highlight(src, lang) {
 }
 
 document.querySelectorAll('.code-block[data-lang]').forEach(block => {
+    const raw = block.textContent.trim();
     if (LANGS[block.dataset.lang]) {
         block.innerHTML = highlight(block.innerHTML.trim(), block.dataset.lang);
     }
+    if (block.hasAttribute('data-copy')) {
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.textContent = '📋 Copiar';
+        btn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(raw);
+                btn.textContent = '✅ Copiado';
+            } catch (e) {
+                // Sin permiso de portapapeles: selecciona el texto para Ctrl/Cmd+C
+                const range = document.createRange();
+                range.selectNodeContents(block);
+                const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+                btn.textContent = 'Cmd/Ctrl + C';
+            }
+            setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000);
+        });
+        block.appendChild(btn);
+    }
 });
+
+// Checklist: el progreso se guarda solo en este navegador
+(function initChecklist() {
+    const KEY = 'laura-aws-checklist';
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
+    document.querySelectorAll('#checklistBox input[type="checkbox"]').forEach(box => {
+        const label = box.closest('label');
+        box.checked = !!saved[box.dataset.key];
+        label.classList.toggle('done', box.checked);
+        box.addEventListener('change', () => {
+            saved[box.dataset.key] = box.checked;
+            label.classList.toggle('done', box.checked);
+            try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* sin almacenamiento */ }
+        });
+    });
+})();
 
 // Ir al hash inicial si existe
 const initialHash = location.hash.slice(1);

@@ -3,6 +3,11 @@ name: CI/CD → Build, Push ECR & Deploy ECS
 on:
   push:
     branches: [ "main" ]
+    # Cambios solo en documentación no redespliegan. Si el push incluye
+    # cualquier otro archivo, el pipeline corre igual.
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
 
 env:
   AWS_REGION:          us-east-2
