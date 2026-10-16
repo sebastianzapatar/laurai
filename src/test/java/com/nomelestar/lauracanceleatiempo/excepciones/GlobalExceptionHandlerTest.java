@@ -1,21 +1,16 @@
 package com.nomelestar.lauracanceleatiempo.excepciones;
 
-import com.nomelestar.lauracanceleatiempo.config.StubJwtDecoderConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,7 +20,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
-@Import(StubJwtDecoderConfig.class)
 @Transactional
 class GlobalExceptionHandlerTest {
 
@@ -38,7 +32,6 @@ class GlobalExceptionHandlerTest {
     void setup() {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
-                .apply(springSecurity())
                 .build();
     }
 
@@ -48,8 +41,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void notFoundChef_returns404WithApiError() throws Exception {
-        mockMvc.perform(get("/api/chefs/99999999")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+        mockMvc.perform(get("/api/chefs/99999999"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Chef not found"));
@@ -57,8 +49,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void notFoundDish_returns404() throws Exception {
-        mockMvc.perform(get("/api/dishes/99999999")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+        mockMvc.perform(get("/api/dishes/99999999"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }
@@ -74,7 +65,6 @@ class GlobalExceptionHandlerTest {
                 """;
 
         mockMvc.perform(post("/api/chefs")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(badBody))
                 .andExpect(status().isBadRequest())

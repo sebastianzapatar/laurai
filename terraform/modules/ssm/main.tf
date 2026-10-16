@@ -29,11 +29,3 @@ resource "aws_ssm_parameter" "db_password" {
   overwrite = true
   tags      = { Name = "SPRING_DATASOURCE_PASSWORD" }
 }
-
-resource "aws_ssm_parameter" "keycloak_uri" {
-  name      = "${local.prefix}/KEYCLOAK_ISSUER_URI"
-  type      = "SecureString"
-  value     = var.keycloak_issuer_uri
-  overwrite = true
-  tags      = { Name = "KEYCLOAK_ISSUER_URI" }
-}

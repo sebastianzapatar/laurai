@@ -40,4 +40,4 @@ locals {
 }
 
 # Nota: el build y push de la imagen Docker se realizan en GitHub Actions,
-# no en Terraform. Ver .github/workflows/deploy.yml
+# no en Terraform. Ver .github/workflows/aws-ecs.yml

@@ -9,9 +9,3 @@ spring:
       ddl-auto: create-drop
     show-sql: false
     database-platform: org.hibernate.dialect.H2Dialect
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          # Disabled for tests — security is mocked via @WithMockUser / jwt()
-          issuer-uri: http://localhost:9090/realms/chefs-realm

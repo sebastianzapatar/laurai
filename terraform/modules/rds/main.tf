@@ -50,11 +50,11 @@ resource "aws_db_instance" "postgres" {
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.rds.id]
 
-  publicly_accessible = false   # Solo accesible desde dentro de la VPC
-  multi_az            = false   # Cambiar a true en producción real
-  skip_final_snapshot = true    # Cambiar a false en producción real
+  publicly_accessible = false # Solo accesible desde dentro de la VPC
+  multi_az            = false # Cambiar a true en producción real
+  skip_final_snapshot = true  # Cambiar a false en producción real
 
-  backup_retention_period = 0   # Free tier no soporta backups automáticos (máximo = 0)
+  backup_retention_period = 0 # Free tier no soporta backups automáticos (máximo = 0)
   backup_window           = "03:00-04:00"
   maintenance_window      = "Mon:04:00-Mon:05:00"
 

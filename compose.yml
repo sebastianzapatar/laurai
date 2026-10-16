@@ -19,47 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.1
-    container_name: keycloak
-    restart: unless-stopped
-    command: start-dev --import-realm
-    environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_DB: dev-mem
-      KC_HTTP_PORT: 9090
-      KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_HEALTH_ENABLED: "true"
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./keycloak:/opt/keycloak/data/import
-    networks:
-      - backend
-    healthcheck:
-      # Keycloak 26 tiene curl en la imagen — usamos el endpoint de health en el puerto de management (9000)
-      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/localhost/9090 && echo -e 'GET /realms/chefs-realm HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && timeout 2 cat <&3 | grep -q 'chefs-realm'" ]
-      interval: 20s
-      timeout: 15s
-      retries: 12
-      start_period: 60s
-
-  keycloak-setup:
-    image: curlimages/curl:latest
-    container_name: keycloak_setup
-    depends_on:
-      keycloak:
-        condition: service_healthy
-    volumes:
-      - ./keycloak:/scripts
-    entrypoint: [ "sh", "/scripts/fix-master-ssl.sh" ]
-    networks:
-      - backend
-    restart: "no"
-
   api:
     build:
       context: .
@@ -69,15 +28,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      keycloak:
-        condition: service_healthy
     ports:
-      - "6969:8080"
+      - "6969:6969"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/chefs_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      KEYCLOAK_ISSUER_URI: http://keycloak:9090/realms/chefs-realm
     networks:
       - backend
 

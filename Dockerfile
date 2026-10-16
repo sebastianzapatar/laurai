@@ -24,12 +24,17 @@ RUN ./mvnw -DskipTests clean package
 FROM eclipse-temurin:25-jre
 WORKDIR /app
 
+# curl lo usa el healthCheck de la task definition de ECS (la imagen JRE no lo trae)
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
+
 
 COPY --from=build /app/target/*.jar /app/app.jar
 
 
 
-EXPOSE 8081
+EXPOSE 6969
 
 # Nota: variable estándar suele ser JAVA_OPTS (sin guion)
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]

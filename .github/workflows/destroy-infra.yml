@@ -49,8 +49,7 @@ jobs:
       run: |
         terraform destroy \
           -auto-approve \
-          -var="db_password=${{ secrets.DB_PASSWORD }}" \
-          -var="keycloak_issuer_uri=${{ secrets.KEYCLOAK_ISSUER_URI }}"
+          -var="db_password=${{ secrets.DB_PASSWORD }}"
 
     - name: ✅ Infraestructura eliminada
       run: echo "Toda la infraestructura ha sido destruida correctamente."

@@ -74,48 +74,10 @@ jobs:
     - name: Terraform Validate
       run: terraform validate
 
-    # ── Importa recursos que ya existen en AWS pero no en el state ────
-    - name: 🧹 Limpiar recursos residuales en AWS
-      run: |
-        echo "Borrando recursos que quedaron huérfanos en AWS..."
-        
-        # 1. ECR Repository
-        aws ecr delete-repository --repository-name laura-api --force 2>/dev/null || true
-
-        # 2. CloudWatch Log Group
-        aws logs delete-log-group --log-group-name /ecs/laura 2>/dev/null || true
-
-        # 3. ALB y Target Group
-        ALB_ARN=$(aws elbv2 describe-load-balancers --names laura-alb --query 'LoadBalancers[0].LoadBalancerArn' --output text 2>/dev/null || echo "")
-        if [ -n "$ALB_ARN" ] && [ "$ALB_ARN" != "None" ]; then
-          aws elbv2 delete-load-balancer --load-balancer-arn "$ALB_ARN" 2>/dev/null || true
-          echo "Esperando a que se borre el ALB..."
-          sleep 10
-        fi
-
-        TG_ARN=$(aws elbv2 describe-target-groups --names laura-tg --query 'TargetGroups[0].TargetGroupArn' --output text 2>/dev/null || echo "")
-        if [ -n "$TG_ARN" ] && [ "$TG_ARN" != "None" ]; then
-          aws elbv2 delete-target-group --target-group-arn "$TG_ARN" 2>/dev/null || true
-        fi
-
-        # 4. IAM Roles (requieren quitar policies primero)
-        aws iam detach-role-policy --role-name laura-ecs-execution-role --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy 2>/dev/null || true
-        aws iam delete-role-policy --role-name laura-ecs-execution-role --policy-name laura-ecs-ssm-read 2>/dev/null || true
-        aws iam delete-role --role-name laura-ecs-execution-role 2>/dev/null || true
-        aws iam delete-role --role-name laura-ecs-task-role 2>/dev/null || true
-
-        # 5. RDS (Subnet group)
-        # Si la base de datos sigue viva, no dejará borrar el subnet group. Lanzamos el borrado por si acaso.
-        aws rds delete-db-instance --db-instance-identifier laura-postgres --skip-final-snapshot 2>/dev/null || true
-        aws rds delete-db-subnet-group --db-subnet-group-name laura-db-subnet-group 2>/dev/null || true
-        
-        echo "Limpieza completada. Procediendo con Terraform..."
-
     - name: Terraform Plan
       run: |
         terraform plan \
           -var="db_password=${{ secrets.DB_PASSWORD }}" \
-          -var="keycloak_issuer_uri=${{ secrets.KEYCLOAK_ISSUER_URI }}" \
           -out=plan.out
 
     - name: Terraform Apply

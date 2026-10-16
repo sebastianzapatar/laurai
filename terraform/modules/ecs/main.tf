@@ -182,10 +182,6 @@ resource "aws_ecs_task_definition" "app" {
         {
           name      = "SPRING_DATASOURCE_PASSWORD"
           valueFrom = "/${var.project_name}/${var.environment}/SPRING_DATASOURCE_PASSWORD"
-        },
-        {
-          name      = "KEYCLOAK_ISSUER_URI"
-          valueFrom = "/${var.project_name}/${var.environment}/KEYCLOAK_ISSUER_URI"
         }
       ]
 
@@ -212,10 +208,9 @@ resource "aws_ecs_task_definition" "app" {
     }
   ])
 
-  lifecycle {
-    # El CI/CD actualiza la imagen; Terraform no debe revertir esos cambios
-    ignore_changes = [container_definitions]
-  }
+  # Sin ignore_changes: si cambian secrets/puertos aquí, Terraform registra una
+  # revisión nueva. El CI/CD descarga la última revisión y solo le cambia la imagen,
+  # y el servicio ignora task_definition, así que Terraform no revierte los deploys.
 }
 
 # ══════════════════════════════════════════════════════════════
@@ -239,7 +234,7 @@ resource "aws_lb_target_group" "app" {
   port        = var.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
-  target_type = "ip"  # Obligatorio para Fargate
+  target_type = "ip" # Obligatorio para Fargate
 
   health_check {
     path                = "/actuator/health"
@@ -280,7 +275,7 @@ resource "aws_ecs_service" "app" {
   network_configuration {
     subnets          = var.private_subnet_ids
     security_groups  = [aws_security_group.ecs.id]
-    assign_public_ip = false  # Usa NAT Gateway para salir a internet
+    assign_public_ip = false # Usa NAT Gateway para salir a internet
   }
 
   load_balancer {
@@ -294,7 +289,7 @@ resource "aws_ecs_service" "app" {
 
   deployment_circuit_breaker {
     enable   = true
-    rollback = true   # Rollback automático si el deploy falla
+    rollback = true # Rollback automático si el deploy falla
   }
 
   depends_on = [aws_lb_listener.http]

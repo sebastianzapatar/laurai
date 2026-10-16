@@ -41,14 +41,6 @@ variable "db_password" {
   sensitive   = true
 }
 
-# ── Keycloak ──────────────────────────────────────────────────
-
-variable "keycloak_issuer_uri" {
-  description = "URI del issuer de Keycloak"
-  type        = string
-  default     = "http://localhost:8080/realms/chefs-realm"
-}
-
 # ── ECS / Contenedor ──────────────────────────────────────────
 
 variable "container_port" {

@@ -2,13 +2,11 @@ package com.nomelestar.lauracanceleatiempo.dishes.repository;
 
 import com.nomelestar.lauracanceleatiempo.chef.model.Chef;
 import com.nomelestar.lauracanceleatiempo.chef.repository.ChefRepository;
-import com.nomelestar.lauracanceleatiempo.config.StubJwtDecoderConfig;
 import com.nomelestar.lauracanceleatiempo.dishes.models.Dish;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(StubJwtDecoderConfig.class)
 @Transactional
 class DishRepositoryTest {
 

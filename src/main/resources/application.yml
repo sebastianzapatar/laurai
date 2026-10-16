@@ -26,9 +26,3 @@ spring:
     sql:
       init:
         mode: always
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          # Issuer URI de Keycloak - sobreescribible via variable de entorno en Docker
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/chefs-realm}

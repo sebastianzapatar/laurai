@@ -13,9 +13,6 @@ db_name     = "chefs_db"
 db_username = "postgres"
 db_password = "CAMBIA_ESTO_POR_UNA_CONTRASEÑA_SEGURA"
 
-# Keycloak - URI de tu instancia de Keycloak en producción
-keycloak_issuer_uri = "https://tu-keycloak.dominio.com/realms/chefs-realm"
-
 # ECS / Contenedor
 container_port = 6969
 task_cpu       = 512    # 0.5 vCPU
